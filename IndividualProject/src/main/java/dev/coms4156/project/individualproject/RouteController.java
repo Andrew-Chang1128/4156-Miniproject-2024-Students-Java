@@ -121,6 +121,70 @@ public class RouteController {
   }
 
   /**
+   * Displays the details of the requested course to the user or displays the proper error
+   * message in response to the request.
+   *
+   * @param courseCode A {@code int} representing the course the user wishes
+   *                   to retrieve.
+   *
+   * @return           A {@code ResponseEntity} object containing either the details of the
+   *                   course and an HTTP 200 response or, an appropriate message indicating the
+   *                   proper response.
+   */
+  @GetMapping(value = "/retrieveCourses", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> retrieveCourses(
+      @RequestParam(value = "courseCode") int courseCode) {
+    try {
+      // boolean doesDepartmentExists = retrieveDepartment(deptCode).getStatusCode() == HttpStatus.OK;
+      Map<String, Department> departmentMapping;
+      departmentMapping = IndividualProjectApplication.myFileDatabase.getDepartmentMapping();
+      // System.out.println(departmentMapping);
+      boolean courseExists = false;  // Initialize the flag to false
+      String result = ""; 
+      for (Map.Entry<String, Department> departmentEntry : departmentMapping.entrySet()) {
+        String departmentName = departmentEntry.getKey();
+        Department department = departmentEntry.getValue();
+        
+        // Get the courses map from the department
+        Map<String, Course> courses = department.getCourseSelection(); // Assuming getCourses() exists
+        
+        // Iterate over each Course in the courses map
+        for (Map.Entry<String, Course> courseEntry : courses.entrySet()) {
+            String courseCodeIter = courseEntry.getKey();
+            Course course = courseEntry.getValue();
+            // Now you can access the course details here
+            if (courseCodeIter.equals(String.valueOf(courseCode))){
+              String temp = "Department Name: " + departmentName + " Course Code: " + courseCodeIter + ", Course: " + course + "\n";
+              System.out.println(temp);
+              result += temp;
+              courseExists = true;
+            }
+        }
+      }
+
+      if (courseExists){
+        return new ResponseEntity<>(result, HttpStatus.OK);
+      }else{
+        return new ResponseEntity<>("testing", HttpStatus.NOT_FOUND);
+      }
+    
+      // Map<String, Course> coursesMapping;
+      // coursesMapping = departmentMapping.get(deptCode).getCourseSelection();
+
+      // if (!coursesMapping.containsKey(Integer.toString(courseCode))) {
+      //   return new ResponseEntity<>("Course Not Found", HttpStatus.NOT_FOUND);
+      // } else {
+      //   return new ResponseEntity<>(coursesMapping.get(Integer.toString(courseCode)).toString(),
+      //       HttpStatus.OK);
+      // }
+      // LOGGER.info("dept not found");
+      // return new ResponseEntity<>("Department Not Found", HttpStatus.NOT_FOUND);
+    } catch (Exception e) {
+      return handleException(e);
+    }
+  }
+
+  /**
    * Displays whether the course has at minimum reached its enrollmentCapacity.
    *
    * @param deptCode   A {@code String} representing the department the user wishes
@@ -157,6 +221,9 @@ public class RouteController {
       return handleException(e);
     }
   }
+
+
+
 
   /**
    * Displays the number of majors in the specified department.
