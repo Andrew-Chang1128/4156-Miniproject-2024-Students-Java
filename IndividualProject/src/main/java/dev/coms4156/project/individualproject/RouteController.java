@@ -79,6 +79,7 @@ public class RouteController {
     }
   }
 
+
   /**
    * Displays the details of the requested course to the user or displays the proper error
    * message in response to the request.
